@@ -1,6 +1,6 @@
 # omnibus/jdl-express
 
-JD Logistics (京东物流) for [omniscient/omnibus](https://github.com/glitchr-studio/omnibus):
+JD Logistics (京东物流) for [omnisense/omnibus](https://github.com/glitchr-omnisense/omnibus):
 orders with their waybills and labels, tracking and cancellation - the open platform's signed
 ECAP APIs. Prices come from configuration (`rates`): JD quotes by contract.
 
@@ -8,7 +8,7 @@ ECAP APIs. Prices come from configuration (`rates`): JD quotes by contract.
 $gateway = (new JdlExpressGatewayFactory($http))->create($options);   // $http: the application's HTTP client - none given, the factory makes its own; the options below
 ```
 
-No framework needed: the package requires `omniscient/omnibus` and `symfony/http-client`. In a
+No framework needed: the package requires `omnisense/omnibus` and `symfony/http-client`. In a
 Symfony application, the same through the bundle's configuration:
 
 ```yaml

@@ -1,6 +1,6 @@
 # omnibus/jdl-express
 
-JD Logistics (京东物流) for [omniscient/omnibus](https://github.com/glitchr-studio/omnibus):
+JD Logistics (京东物流) for [omnisense/omnibus](https://github.com/glitchr-omnisense/omnibus):
 orders with their waybills and PDF labels, tracking and cancellation, through the ECAP APIs of
 JD Logistics' open platform, every call signed. JD quotes by contract: prices come from the
 `rates` option. The gateway calls:
@@ -20,7 +20,7 @@ on `https://api.jdl.com` (live) or `https://uat-api.jdl.com` (UAT, `sandbox: tru
 composer require omnibus/jdl-express
 ```
 
-Requires PHP 8.2, `omniscient/omnibus` (2.x) and `symfony/http-client` (6.4, 7 or 8); given no
+Requires PHP 8.2, `omnisense/omnibus` (2.x) and `symfony/http-client` (6.4, 7 or 8); given no
 HTTP client, the factory makes one with `HttpClient::create()`. In a Symfony application with
 `Omnibus\Bridge\Symfony\OmnibusBundle`, the factory is registered as soon as the package is
 installed.
@@ -47,7 +47,7 @@ secret` (`Omnibus\JdlExpress\Api::sign()`).
 | `access_token` | string | - | yes | the merchant's authorisation token |
 | `customer_code` | string | - | yes | the 商家编码, sent with every request |
 | `sandbox` | bool | `false` | no | `true`: UAT |
-| `rates` | list | - | no | the only way this gateway rates ([the rates option](https://github.com/glitchr-studio/omnibus/blob/2.x/docs/configuration.md#the-rates-option)) |
+| `rates` | list | - | no | the only way this gateway rates ([the rates option](https://github.com/glitchr-omnisense/omnibus/blob/2.x/docs/configuration.md#the-rates-option)) |
 
 Shipment options read when booking (`Shipment::$options`):
 

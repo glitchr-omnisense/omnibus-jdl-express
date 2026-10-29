@@ -3,6 +3,7 @@
 namespace Omnibus\JdlExpress;
 
 use Omnibus\Exception\CarrierException;
+use Omnibus\Http\Redaction;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -44,16 +45,18 @@ final class Api
             $status = $response->getStatusCode();
             $data = json_decode($response->getContent(false), true);
         } catch (HttpExceptionInterface|\JsonException $e) {
-            throw new CarrierException('jdl_express', 'JD Logistics request failed: '.$e->getMessage(), null, $e);
+            $secrets = $this->secrets($query['sign']);
+
+            throw Redaction::withoutArguments(new CarrierException('jdl_express', 'JD Logistics request failed: '.Redaction::text($e->getMessage(), $secrets), null, Redaction::copy($e, $secrets)));
         }
         if ($status >= 400 || !\is_array($data)) {
-            throw new CarrierException('jdl_express', sprintf('JD Logistics answered HTTP %d.', $status));
+            throw Redaction::withoutArguments(new CarrierException('jdl_express', sprintf('JD Logistics answered HTTP %d.', $status)));
         }
         if (isset($data['code']) && 0 !== (int) $data['code']) {
-            throw new CarrierException('jdl_express', (string) ($data['msg'] ?? $data['message'] ?? 'JD Logistics refused the call.'), (string) $data['code']);
+            throw Redaction::withoutArguments(new CarrierException('jdl_express', (string) ($data['msg'] ?? $data['message'] ?? 'JD Logistics refused the call.'), (string) $data['code']));
         }
         if (isset($data['statusCode']) && 0 !== (int) $data['statusCode']) {
-            throw new CarrierException('jdl_express', (string) ($data['statusMessage'] ?? 'JD Logistics refused the request.'), (string) $data['statusCode']);
+            throw Redaction::withoutArguments(new CarrierException('jdl_express', (string) ($data['statusMessage'] ?? 'JD Logistics refused the request.'), (string) $data['statusCode']));
         }
 
         return $data['data'] ?? $data;
@@ -62,5 +65,15 @@ final class Api
     public static function sign(string $secret, string $token, string $key, string $method, string $json, string $timestamp, string $v): string
     {
         return strtoupper(md5($secret.'access_token'.$token.'app_key'.$key.'method'.$method.'param_json'.$json.'timestamp'.$timestamp.'v'.$v.$secret));
+    }
+
+    /**
+     * What a failure must not carry: the credentials and the token, and what a request made of them.
+     *
+     * @return list<string>
+     */
+    private function secrets(string ...$more): array
+    {
+        return [$this->appKey, $this->appSecret, $this->accessToken, ...$more];
     }
 }

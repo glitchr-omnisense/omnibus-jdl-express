@@ -31,7 +31,7 @@ final class Api
     public function call(string $path, array $body): array
     {
         $json = json_encode([$body], \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
-        $timestamp = date('Y-m-d H:i:s');
+        $timestamp = (new \DateTimeImmutable('now', new \DateTimeZone('Asia/Shanghai')))->format('Y-m-d H:i:s'); // JD's open platform reads it as Beijing time (GMT+8)
         $query = ['LOP-DN' => 'omnibus', 'access_token' => $this->accessToken, 'app_key' => $this->appKey, 'timestamp' => $timestamp, 'v' => '2.0', 'algorithm' => 'md-5'];
         $query['sign'] = self::sign($this->appSecret, $this->accessToken, $this->appKey, $path, $json, $timestamp, '2.0');
         try {

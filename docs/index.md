@@ -33,7 +33,8 @@ installed.
   first.
 
 Every call posts its payload as a JSON list of one object, with the query `LOP-DN=omnibus`,
-`access_token`, `app_key`, `timestamp` (`Y-m-d H:i:s`, in PHP's default time zone), `v=2.0`,
+`access_token`, `app_key`, `timestamp` (`Y-m-d H:i:s`, Beijing time, GMT+8, whatever PHP's default
+time zone), `v=2.0`,
 `algorithm=md-5` and `sign` = the MD5, in capitals, of `secret + "access_token" + token +
 "app_key" + key + "method" + path + "param_json" + body + "timestamp" + timestamp + "v" + "2.0" +
 secret` (`Omnibus\JdlExpress\Api::sign()`).
@@ -195,8 +196,8 @@ above was run in the core's harness on those recorded answers.
 
 Not verified: the README and the factory mark the package **unverified** against UAT until an
 account's keys are at hand; it is built from JD Logistics' published open platform documentation.
-The signature's timestamp is written in PHP's default time zone: whether JD expects Beijing time
-is unchecked.
+The signature's timestamp is written in Beijing time (GMT+8), as JD's open platform documents it;
+unchecked against UAT.
 
 ## Responsibility
 

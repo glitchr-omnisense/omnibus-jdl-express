@@ -75,4 +75,18 @@ final class JdlExpressGatewayTest extends TestCase
             self::assertSame('10002', $e->carrierCode);
         }
     }
+
+    /** JD's open platform signs a timestamp in Beijing time (yyyy-MM-dd HH:mm:ss, GMT+8), whatever PHP's default time zone. */
+    public function testTheTimestampIsBeijingTime(): void
+    {
+        $zone = date_default_timezone_get();
+        date_default_timezone_set('America/Los_Angeles');
+        try {
+            $this->gateway()->ship(self::shipment());
+        } finally {
+            date_default_timezone_set($zone);
+        }
+        $sent = new \DateTimeImmutable($this->calls[0][1]['timestamp'], new \DateTimeZone('Asia/Shanghai'));
+        self::assertLessThan(120, abs($sent->getTimestamp() - time()));
+    }
 }

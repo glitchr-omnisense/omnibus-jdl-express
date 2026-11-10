@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+- On omnisense/contracts: the carrier's usage policy as data (`policy.json`, named in
+  `composer.json`'s `extra.omnisense.policy`; docs/index.md, Usage policy), and its waits honoured:
+  the API client takes the gateway's Backoff, a 429 is a `RateLimitedException`, the next calls are
+  held unsent, nothing is retried. Requires omnisense/contracts. `phpstan.neon` at level max,
+  `phpstan-baseline.neon` what was there.
+- A label fetched after the booking and held by the carrier's wait leaves the booking standing, as a
+  label not ready did.
+
 ### Fixed
 - A `CarrierException` no longer carries the app key and secret, the access token and the signature
   (in the query). The message quoted the HTTP client's (the whole URL), the previous was the

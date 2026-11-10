@@ -27,12 +27,13 @@ final class JdlExpressGatewayFactory extends GatewayFactory
         $config->defaults([
             'omnibus.factory_name' => 'jdl_express',
             'omnibus.factory_title' => 'JD Logistics',
+            'omnibus.policy' => __DIR__.'/policy.json',
             'omnibus.required_options' => ['app_key', 'app_secret', 'access_token', 'customer_code'],
             'sandbox' => false,
             'omnibus.api' => function (Config $c) {
                 $http = $this->http ?? HttpClient::create();
 
-                return new Api($http, (string) $c['app_key'], (string) $c['app_secret'], (string) $c['access_token'], (string) $c['customer_code'], (bool) $c['sandbox']);
+                return new Api($http, (string) $c['app_key'], (string) $c['app_secret'], (string) $c['access_token'], (string) $c['customer_code'], (bool) $c['sandbox'], backoff: $c->backoff());
             },
             'omnibus.action.shipping' => new ShippingAction(),
             'omnibus.action.tracking' => new TrackingAction(),

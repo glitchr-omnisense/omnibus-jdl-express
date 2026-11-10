@@ -6,6 +6,7 @@ use Omnibus\Action\ActionInterface;
 use Omnibus\Action\ApiAwareInterface;
 use Omnibus\Action\ApiAwareTrait;
 use Omnibus\Exception\CarrierException;
+use Omnibus\Exception\UsageLimitReachedException;
 use Omnibus\JdlExpress\Api;
 use Omnibus\Model\Address;
 use Omnibus\Model\Label;
@@ -57,7 +58,8 @@ final class ShippingAction implements ActionInterface, ApiAwareInterface
             if (isset($file['pdfBase64']) && \is_string($file['pdfBase64'])) {
                 $content = base64_decode($file['pdfBase64']);
             }
-        } catch (CarrierException) {
+        } catch (CarrierException|UsageLimitReachedException) {
+            // The shipment is booked: a label held by the carrier's wait is fetched later, as a failed one.
         }
         $request->setResult(new Label('jdl_express', $number, $content, Label::PDF, $url, 'https://www.jdl.com/orderSearch?waybillCodes='.rawurlencode($number)));
     }

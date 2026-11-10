@@ -4,6 +4,8 @@ namespace Omnibus\JdlExpress;
 
 use Omnibus\Exception\CarrierException;
 use Omnibus\Http\Redaction;
+use Omnibus\Http\Throttle;
+use Omnisense\Contracts\Policy\Backoff;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -25,6 +27,8 @@ final class Api
         public readonly string $customerCode,
         public readonly bool $sandbox = false,
         private readonly int $timeout = 20,
+        /** The waits the carrier asks for (omnisense/contracts' Backoff): no call while one lasts, a 429 a RateLimitedException, never retried */
+        private readonly ?Backoff $backoff = null,
     ) {
     }
 
@@ -36,6 +40,7 @@ final class Api
         $query = ['LOP-DN' => 'omnibus', 'access_token' => $this->accessToken, 'app_key' => $this->appKey, 'timestamp' => $timestamp, 'v' => '2.0', 'algorithm' => 'md-5'];
         $query['sign'] = self::sign($this->appSecret, $this->accessToken, $this->appKey, $path, $json, $timestamp, '2.0');
         try {
+            Throttle::before($this->backoff);
             $response = $this->http->request('POST', ($this->sandbox ? self::TEST : self::LIVE).$path, [
                 'headers' => ['Content-Type' => 'application/json;charset=UTF-8'],
                 'query' => $query,
@@ -43,6 +48,7 @@ final class Api
                 'timeout' => $this->timeout,
             ]);
             $status = $response->getStatusCode();
+            Throttle::after($this->backoff, 'jdl_express', $status, $response->getHeaders(false));
             $data = json_decode($response->getContent(false), true);
         } catch (HttpExceptionInterface|\JsonException $e) {
             $secrets = $this->secrets($query['sign']);

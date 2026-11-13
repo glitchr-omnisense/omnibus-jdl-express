@@ -4,6 +4,43 @@ JD Logistics (京东物流) for [omnisense/omnibus](https://github.com/glitchr-o
 orders with their waybills and labels, tracking and cancellation - the open platform's signed
 ECAP APIs. Prices come from configuration (`rates`): JD quotes by contract.
 
+## Install and a first call
+
+```sh
+composer require omnibus/jdl-express
+```
+
+No account for this first call: JD Logistics's answer is recorded
+(`Omnibus\Testing\RecordedHttpClient` answers in place of the API), so nothing leaves the process.
+With your own credentials, give the factory your HTTP client (or none: it makes its own) and drop
+the recorded one.
+
+```php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Omnibus\JdlExpress\JdlExpressGatewayFactory;
+use Omnibus\Testing\RecordedHttpClient;
+
+// JD Logistics's answer, recorded: no account, and nothing leaves the process.
+$http = new RecordedHttpClient([
+    '/ecap/v1/orders/trace/query' => ['code' => 0, 'data' => ['waybillCode' => 'JDV000123456789', 'traceDetails' => [
+        ['operateTime' => '2026-10-02 11:30:00', 'operateState' => 150, 'operateRemark' => '您的快件已签收', 'operateSite' => '北京朝阳站'],
+    ]]],
+]);
+$gateway = (new JdlExpressGatewayFactory($http))->create(['app_key' => 'ak', 'app_secret' => 'as', 'access_token' => 'tok', 'customer_code' => '010K123456', 'sandbox' => true]);
+
+$tracking = $gateway->track('JDV000123456789');
+echo $tracking->status->value, ' - ', $tracking->latest()?->description, "\n";   // delivered - 您的快件已签收
+```
+
+A real call needs a JD Logistics account (the credentials below). **Unverified**: the request and
+answer shapes come from JD Logistics's published documentation, and the package has not been run
+against its service.
+
+## Configuration
+
 ```php
 $gateway = (new JdlExpressGatewayFactory($http))->create($options);   // $http: the application's HTTP client - none given, the factory makes its own; the options below
 ```
